@@ -6,69 +6,8 @@ on:
       - 'v*'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=ref,event=tag
-            type=sha
-
-      - name: Build and push API
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile.api
-          push: true
-          tags: ghcr.io/${{ github.repository }}/api:${{ github.ref_name }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Build and push Web
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./docker/Dockerfile.web
-          push: true
-          tags: ghcr.io/${{ github.repository }}/web:${{ github.ref_name }}
-          labels: ${{ steps.meta.outputs.labels }}
-
   release:
     runs-on: ubuntu-latest
-    needs: [build]
     permissions:
       contents: write
     steps:
@@ -78,18 +17,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body: |
-            ## NEXUS-SENTRY v${{ github.ref_name }}
-
-            ### Docker Images
-            ```bash
-            # API
-            docker pull ghcr.io/${{ github.repository }}/api:${{ github.ref_name }}
+            ## NEXUS-SENTRY ${{ github.ref_name }}
             
-            # Web
-            docker pull ghcr.io/${{ github.repository }}/web:${{ github.ref_name }}
-            ```
-
-            ### Quick Start
+            Run with Docker:
             ```bash
             docker compose -f docker/docker-compose.yml up
             ```

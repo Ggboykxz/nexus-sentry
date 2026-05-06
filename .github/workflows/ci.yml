@@ -1,4 +1,4 @@
-name: CI
+name: Build
 
 on:
   push:
@@ -7,25 +7,16 @@ on:
     branches: [master]
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
+      - name: Build API image
+        run: docker build -t api -f docker/Dockerfile.api .
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
+      - name: Build Web image
+        run: docker build -t web -f docker/Dockerfile.web .
 
-      - name: Install
-        run: pnpm install --frozen-lockfile
-
-      - name: TypeScript check
-        run: pnpm --filter @nexus-sentry/api typecheck || true
-
-      - name: Lint
-        run: pnpm lint || true
+      - name: List images
+        run: docker images | grep -E "api|web"
