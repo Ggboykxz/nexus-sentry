@@ -17,14 +17,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-    volumes:
-      - ./apps/api:/app/src
-    command: bun run /app/src/index.ts
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   web:
     build:
@@ -37,10 +29,6 @@ services:
       - VITE_WS_URL=ws://api:3001
     depends_on:
       - api
-    volumes:
-      - ./apps/web:/app/src
-      - /app/node_modules
-    command: bun run /app/src/main.tsx
 
   postgres:
     image: postgres:16-alpine
@@ -65,11 +53,6 @@ services:
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
 
   ollama:
     image: ollama/ollama:latest
@@ -79,17 +62,8 @@ services:
       - ollama_data:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 volumes:
   postgres_data:
   redis_data:
   ollama_data:
-
-networks:
-  default:
-    name: nexus-sentry-network

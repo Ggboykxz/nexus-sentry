@@ -2,14 +2,15 @@ FROM oven/bun:1-debian
 
 WORKDIR /app
 
-COPY apps/web/package.json apps/web/pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+COPY apps/web/package.json ./
+RUN npm install -g pnpm && pnpm install
 
 COPY apps/web/src/ ./src/
-COPY apps/web/vite.config.ts ./apps/web/
-COPY apps/web/index.html ./apps/web/
-COPY apps/web/tailwind.config.js ./apps/web/
-COPY apps/web/postcss.config.js ./apps/web/
+COPY apps/web/index.html ./
+COPY apps/web/vite.config.ts ./
+COPY apps/web/tailwind.config.js ./
+COPY apps/web/postcss.config.js ./
+COPY apps/web/tsconfig.json ./
 
 EXPOSE 3000
 
