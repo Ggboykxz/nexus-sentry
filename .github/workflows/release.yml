@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
@@ -29,25 +32,39 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build API image
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=tag
+            type=sha
+
+      - name: Build and push API
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.api
-          push: false
-          tags: nexus-sentry/api:latest,${{ github.repository }}:api:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          push: true
+          tags: ghcr.io/${{ github.repository }}/api:${{ github.ref_name }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Build Web image
+      - name: Build and push Web
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.web
-          push: false
-          tags: nexus-sentry/web:latest,${{ github.repository }}:web:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          push: true
+          tags: ghcr.io/${{ github.repository }}/web:${{ github.ref_name }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   release:
     runs-on: ubuntu-latest
@@ -57,23 +74,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download API build
-        uses: actions/download-artifact@v4
-        with:
-          name: api
-          path: dist/api
-
-      - name: Download Web build
-        uses: actions/download-artifact@v4
-        with:
-          name: web
-          path: dist/web
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            dist/api/**
-            dist/web/**
+          body: |
+            ## NEXUS-SENTRY v${{ github.ref_name }}
+
+            ### Docker Images
+            ```bash
+            # API
+            docker pull ghcr.io/${{ github.repository }}/api:${{ github.ref_name }}
+            
+            # Web
+            docker pull ghcr.io/${{ github.repository }}/web:${{ github.ref_name }}
+            ```
+
+            ### Quick Start
+            ```bash
+            docker compose -f docker/docker-compose.yml up
+            ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
