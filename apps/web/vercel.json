@@ -1,17 +1,6 @@
 {
-  "framework": null,
-  "buildCommand": "cd apps/web && pnpm install && pnpm build",
-  "outputDirectory": "apps/web/dist",
+  "framework": "react",
+  "buildCommand": "pnpm install && pnpm build",
   "installCommand": "pnpm install",
-  "devCommand": "cd apps/web && pnpm dev",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://your-api.vercel.app/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ]
+  "outputDirectory": "dist"
 }
