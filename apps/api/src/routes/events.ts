@@ -2,7 +2,32 @@ import { Hono } from 'hono';
 import { db } from '../db/index.js';
 import { events } from '../db/schema.js';
 import { eq, desc, and, sql } from 'drizzle-orm';
-import { eventSchema, createEventSchema, eventFilterSchema, updateEventStatusSchema } from '@nexus-sentry/shared';
+import { z } from 'zod';
+
+const createEventSchema = z.object({
+  source: z.string(),
+  sourceId: z.string().optional(),
+  title: z.string(),
+  description: z.string().optional(),
+  severity: z.enum(['critical', 'error', 'warning', 'info']).default('info'),
+  payload: z.record(z.unknown()).default({}),
+  tags: z.array(z.string()).default([]),
+  incidentId: z.string().uuid().optional(),
+});
+
+const eventFilterSchema = z.object({
+  source: z.string().optional(),
+  severity: z.enum(['critical', 'error', 'warning', 'info']).optional(),
+  status: z.enum(['open', 'resolved', 'ignored']).optional(),
+  from: z.string().datetime().optional(),
+  to: z.string().datetime().optional(),
+  limit: z.coerce.number().min(1).max(100).default(50),
+  offset: z.coerce.number().min(0).default(0),
+});
+
+const updateEventStatusSchema = z.object({
+  status: z.enum(['open', 'resolved', 'ignored']),
+});
 
 const eventsRouter = new Hono();
 
@@ -52,7 +77,7 @@ eventsRouter.post('/', async (c) => {
     return c.json({ error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0].message } }, 400);
   }
   
-  const [created] = await db.insert(events).values(parsed.data).returning();
+  const [created] = await db.insert(events).values(parsed.data as any).returning();
   
   return c.json({ data: created }, 201);
 });

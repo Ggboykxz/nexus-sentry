@@ -6,10 +6,10 @@ import { format } from 'date-fns';
 import { Filter, RefreshCw } from 'lucide-react';
 
 export default function Timeline() {
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const { data, isLoading, refetch } = useEvents(filters);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [severityFilter, setSeverityFilter] = useState('');
+  const [statusFilter] = useState('');
+  const [severityFilter] = useState('');
 
   const handleFilterChange = (key: string, value: string) => {
     const newFilters = { ...filters };

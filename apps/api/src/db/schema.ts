@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, jsonb, boolean, integer, index, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, jsonb, boolean, integer, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const severityEnum = pgEnum('severity', ['critical', 'error', 'warning', 'info']);
@@ -7,7 +7,7 @@ export const incidentStatusEnum = pgEnum('incident_status', ['open', 'resolved',
 export const sourceEnum = pgEnum('source', ['github', 'sentry', 'generic', 'cli', 'prometheus']);
 
 export const events = pgTable('events', {
-  id: uuid('id').primaryKey().defaultRaw('gen_random_uuid()'),
+  id: uuid('id').primaryKey(),
   source: sourceEnum('source').notNull(),
   sourceId: text('source_id'),
   title: text('title').notNull(),
@@ -16,18 +16,13 @@ export const events = pgTable('events', {
   status: eventStatusEnum('status').notNull().default('open'),
   payload: jsonb('payload').notNull().default({}),
   tags: text('tags').array().default([]),
-  incidentId: uuid('incident_id').referencesOn(() => incidents.id),
+  incidentId: uuid('incident_id').references(() => incidents.id),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   resolvedAt: timestamp('resolved_at', { withTimezone: true }),
-}, (table) => [
-  index('idx_events_source').on(table.source),
-  index('idx_events_severity').on(table.severity),
-  index('idx_events_created_at').on(table.createdAt).descending(),
-  index('idx_events_status').on(table.status),
-]);
+});
 
 export const incidents = pgTable('incidents', {
-  id: uuid('id').primaryKey().defaultRaw('gen_random_uuid()'),
+  id: uuid('id').primaryKey(),
   title: text('title').notNull(),
   summary: text('summary'),
   rootCause: text('root_cause'),
@@ -39,25 +34,20 @@ export const incidents = pgTable('incidents', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   resolvedAt: timestamp('resolved_at', { withTimezone: true }),
-}, (table) => [
-  index('idx_incidents_status').on(table.status),
-  index('idx_incidents_created_at').on(table.createdAt).descending(),
-]);
+});
 
 export const metrics = pgTable('metrics', {
-  id: uuid('id').primaryKey().defaultRaw('gen_random_uuid()'),
-  name: text('not_null').notNull(),
+  id: uuid('id').primaryKey(),
+  name: text('name').notNull(),
   value: integer('value').notNull(),
   unit: text('unit'),
   tags: jsonb('tags').default({}),
   source: text('source'),
   recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [
-  index('idx_metrics_name_time').on(table.name, table.recordedAt).descending(),
-]);
+});
 
 export const webhookConfigs = pgTable('webhook_configs', {
-  id: uuid('id').primaryKey().defaultRaw('gen_random_uuid()'),
+  id: uuid('id').primaryKey(),
   name: text('name').notNull(),
   provider: sourceEnum('provider').notNull(),
   secret: text('secret'),

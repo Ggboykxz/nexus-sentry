@@ -5,11 +5,14 @@ import { MetricCard } from '../components/MetricCard';
 import { AlertCircle, CheckCircle, Clock, Activity } from 'lucide-react';
 
 export default function Dashboard() {
-  const { data: events, isLoading: eventsLoading } = useEvents({ limit: 10 });
-  const { data: incidents, isLoading: incidentsLoading } = useIncidents({ limit: 5 });
+  const { data: eventsData, isLoading: eventsLoading } = useEvents({ limit: 10 });
+  const { data: incidentsData, isLoading: incidentsLoading } = useIncidents({ limit: 5 });
 
-  const openIncidents = incidents?.filter(i => i.status === 'open') || [];
-  const criticalEvents = events?.filter(e => e.severity === 'critical' || e.severity === 'error') || [];
+  const events = eventsData?.data || [];
+  const incidents = incidentsData?.data || [];
+
+  const openIncidents = incidents.filter(i => i.status === 'open');
+  const criticalEvents = events.filter(e => e.severity === 'critical' || e.severity === 'error');
 
   if (eventsLoading || incidentsLoading) {
     return <div className="animate-pulse">Loading...</div>;
@@ -28,7 +31,7 @@ export default function Dashboard() {
         />
         <MetricCard
           title="Resolved"
-          value={incidents?.filter(i => i.status === 'resolved').length || 0}
+          value={incidents.filter(i => i.status === 'resolved').length}
           icon={CheckCircle}
           variant="success"
         />
@@ -40,7 +43,7 @@ export default function Dashboard() {
         />
         <MetricCard
           title="Total Events"
-          value={events?.length || 0}
+          value={events.length}
           icon={Clock}
         />
       </div>
@@ -49,7 +52,7 @@ export default function Dashboard() {
         <div className="rounded-lg border bg-card p-4">
           <h2 className="font-semibold mb-4">Recent Events</h2>
           <div className="space-y-2">
-            {events?.slice(0, 5).map((event) => (
+            {events.slice(0, 5).map((event) => (
               <div key={event.id} className="flex items-center justify-between py-2 border-b last:border-0">
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{event.title}</p>
@@ -58,7 +61,7 @@ export default function Dashboard() {
                 <SeverityBadge severity={event.severity} />
               </div>
             ))}
-            {events?.length === 0 && (
+            {events.length === 0 && (
               <p className="text-sm text-muted-foreground">No events yet</p>
             )}
           </div>

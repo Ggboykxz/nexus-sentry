@@ -1,8 +1,34 @@
 import { Hono } from 'hono';
 import { db } from '../db/index.js';
 import { incidents, events } from '../db/schema.js';
-import { eq, desc, and, sql, count } from 'drizzle-orm';
-import { createIncidentSchema, updateIncidentSchema, updateEventStatusSchema } from '@nexus-sentry/shared';
+import { eq, desc, and, count } from 'drizzle-orm';
+import { z } from 'zod';
+
+const createIncidentSchema = z.object({
+  title: z.string(),
+  summary: z.string().optional(),
+  rootCause: z.string().optional(),
+  severity: z.enum(['critical', 'error', 'warning', 'info']).default('error'),
+  status: z.enum(['open', 'resolved', 'ignored']).default('open'),
+  suggestedActions: z.array(z.object({
+    priority: z.string(),
+    action: z.string(),
+    reason: z.string(),
+  })).optional(),
+});
+
+const updateIncidentSchema = z.object({
+  title: z.string().optional(),
+  summary: z.string().optional(),
+  rootCause: z.string().optional(),
+  severity: z.enum(['critical', 'error', 'warning', 'info']).optional(),
+  status: z.enum(['open', 'resolved', 'ignored']).optional(),
+  suggestedActions: z.array(z.object({
+    priority: z.string(),
+    action: z.string(),
+    reason: z.string(),
+  })).optional(),
+});
 
 const incidentsRouter = new Hono();
 
@@ -127,7 +153,7 @@ Réponds avec ce JSON exact :
       throw new Error('LLM request failed');
     }
     
-    const llmResult = await response.json();
+    const llmResult = await response.json() as { response: string };
     const parsed = JSON.parse(llmResult.response);
     
     const [updated] = await db.update(incidents)

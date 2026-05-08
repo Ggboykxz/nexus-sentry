@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { db } from '../db/index.js';
 import { metrics } from '../db/schema.js';
-import { eq, desc, and, sql, gte, lte } from 'drizzle-orm';
+import { eq, desc, and, gte, lte } from 'drizzle-orm';
 import { z } from 'zod';
 
 const createMetricSchema = z.object({
@@ -33,8 +33,8 @@ metricsRouter.post('/', async (c) => {
 metricsRouter.get('/', async (c) => {
   const query = c.req.query();
   const name = query.name as string | undefined;
-  const from = query.from as string | undefined;
-  const to = query.to as string | undefined;
+  const from = query.from ? new Date(query.from as string) : undefined;
+  const to = query.to ? new Date(query.to as string) : undefined;
   const limit = parseInt(query.limit as string || '100');
   
   const conditions = [];
@@ -53,8 +53,8 @@ metricsRouter.get('/', async (c) => {
 
 metricsRouter.get('/summary', async (c) => {
   const query = c.req.query();
-  const from = query.from as string | undefined;
-  const to = query.to as string | undefined;
+  const from = query.from ? new Date(query.from as string) : undefined;
+  const to = query.to ? new Date(query.to as string) : undefined;
   
   const conditions = [];
   if (from) conditions.push(gte(metrics.recordedAt, from));

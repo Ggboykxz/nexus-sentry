@@ -15,12 +15,12 @@ aiRouter.get('/status', async (c) => {
       return c.json({ data: { available: false, error: 'Ollama not accessible' } });
     }
     
-    const data = await response.json();
+    const data = await response.json() as { models?: Array<{ name: string }> };
     return c.json({ 
       data: { 
         available: true, 
         model: data.models?.[0]?.name || 'llama3.2:3b',
-        embeddingModels: data.models?.filter((m: any) => m.name.includes('embedding'))?.map((m: any) => m.name) || []
+        embeddingModels: data.models?.filter((m: { name: string }) => m.name.includes('embedding')).map((m: { name: string }) => m.name) || []
       } 
     });
   } catch {
@@ -71,7 +71,7 @@ Réponds uniquement en JSON: {"summary": "...", "severity": "critical|error|warn
       throw new Error('LLM request failed');
     }
     
-    const llmResult = await response.json();
+    const llmResult = await response.json() as { response: string };
     const parsed = JSON.parse(llmResult.response);
     
     return c.json({ data: parsed });
@@ -119,7 +119,7 @@ aiRouter.post('/chat', async (c) => {
       throw new Error('LLM request failed');
     }
     
-    const llmResult = await response.json();
+    const llmResult = await response.json() as { response: string };
     
     return c.json({ 
       data: { 
@@ -178,7 +178,7 @@ Réponds uniquement en JSON:
       throw new Error('LLM request failed');
     }
     
-    const llmResult = await response.json();
+    const llmResult = await response.json() as { response: string };
     const parsed = JSON.parse(llmResult.response);
     
     return c.json({ data: { events: targetEvents, analysis: parsed } });

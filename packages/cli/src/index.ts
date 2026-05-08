@@ -24,7 +24,7 @@ program
         severity: opts.severity,
         source: opts.source,
       });
-      console.log('Event sent:', result.data.id);
+      console.log('Event sent:', (result as { data: { id: string } }).data.id);
     } catch (e) {
       console.error('Error:', e);
       process.exit(1);
@@ -36,9 +36,9 @@ program
   .description('Check system status')
   .action(async () => {
     try {
-      const health = await apiGet('/health');
+      const health = await apiGet('/health') as { status: string };
       console.log('API:', health.status);
-      const ai = await apiGet('/api/v1/ai/status');
+      const ai = await apiGet('/api/v1/ai/status') as { data: { available: boolean } };
       console.log('AI:', ai.data.available ? 'Available' : 'Unavailable');
     } catch (e) {
       console.error('Error:', e);

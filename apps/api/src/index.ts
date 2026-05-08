@@ -2,14 +2,13 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
-import { v4 as uuidv4 } from 'uuid';
 import { eventsRouter } from './routes/events.js';
 import { incidentsRouter } from './routes/incidents.js';
 import { webhooksRouter } from './routes/webhooks.js';
 import { metricsRouter } from './routes/metrics.js';
 import { aiRouter } from './routes/ai.js';
 import { db } from './db/index.js';
-import { events, incidents } from './db/schema.js';
+import { events } from './db/schema.js';
 
 const app = new Hono();
 

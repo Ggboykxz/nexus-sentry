@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-export const severitySchema = z.enum(['critical', 'error', 'warning', 'info']);
-
 export const eventSourceSchema = z.enum(['github', 'sentry', 'generic', 'cli']);
 
 export const eventTypeSchema = z.object({
@@ -10,7 +8,7 @@ export const eventTypeSchema = z.object({
   sourceId: z.string().optional(),
   title: z.string(),
   description: z.string().optional(),
-  severity: severitySchema,
+  severity: z.enum(['critical', 'error', 'warning', 'info']),
   status: z.enum(['open', 'resolved', 'ignored']),
   payload: z.record(z.unknown()),
   tags: z.array(z.string()),
@@ -20,7 +18,6 @@ export const eventTypeSchema = z.object({
 });
 
 export type EventType = z.infer<typeof eventTypeSchema>;
-export type Severity = z.infer<typeof severitySchema>;
 export type EventSource = z.infer<typeof eventSourceSchema>;
 
 export const metricSchema = z.object({

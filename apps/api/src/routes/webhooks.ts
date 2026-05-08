@@ -1,8 +1,16 @@
 import { Hono } from 'hono';
 import { db } from '../db/index.js';
-import { events, incidents } from '../db/schema.js';
-import { eq, sql } from 'drizzle-orm';
-import { genericWebhookPayloadSchema } from '@nexus-sentry/shared';
+import { events } from '../db/schema.js';
+import { z } from 'zod';
+
+const genericWebhookPayloadSchema = z.object({
+  sourceId: z.string().optional(),
+  title: z.string(),
+  description: z.string().optional(),
+  severity: z.enum(['critical', 'error', 'warning', 'info']).default('info'),
+  payload: z.record(z.unknown()).default({}),
+  tags: z.array(z.string()).default([]),
+});
 
 const webhooksRouter = new Hono({ strict: false });
 
@@ -37,7 +45,7 @@ webhooksRouter.post('/github', async (c) => {
   let description = '';
   let severity = 'info';
   let sourceId = '';
-  let tags = ['github'];
+  const tags = ['github'];
   
   if (payload.action === 'dependabot_alert') {
     const alert = payload.alert || {};

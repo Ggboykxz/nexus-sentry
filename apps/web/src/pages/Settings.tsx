@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiGet, apiPost } from '../lib/api';
+import { apiGet } from '../lib/api';
 
 export default function Settings() {
   const [aiStatus, setAiStatus] = useState<any>(null);
