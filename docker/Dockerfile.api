@@ -2,11 +2,17 @@ FROM oven/bun:1-debian
 
 WORKDIR /app
 
-COPY apps/api/package.json ./
-RUN npm install -g pnpm && pnpm install
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared/package.json ./packages/shared/
 
-COPY apps/api src/
+RUN npm install -g pnpm@9.0.0
+RUN pnpm install --frozen-lockfile
 
+COPY apps/api ./apps/api
+COPY packages/shared ./packages/shared
+
+WORKDIR /app/apps/api
 EXPOSE 3001
 
 CMD ["bun", "run", "src/index.ts"]

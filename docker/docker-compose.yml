@@ -3,48 +3,55 @@ version: '3.8'
 services:
   api:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.api
     ports:
       - "3001:3001"
     environment:
-      - DATABASE_URL=postgresql://nexus:nexus@postgres:5432/nexus_sentry
-      - REDIS_URL=redis://redis:6379
-      - OLLAMA_URL=http://ollama:11434
-      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL:-postgresql://nexus:nexus@postgres:5432/nexus_sentry}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - OLLAMA_URL=${OLLAMA_URL:-http://ollama:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:3b}
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3001
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   web:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile.web
     ports:
-      - "3000:3000"
-    environment:
-      - VITE_API_URL=http://api:3001
-      - VITE_WS_URL=ws://api:3001
+      - "80:80"
     depends_on:
       - api
+    restart: unless-stopped
 
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: nexus
-      POSTGRES_PASSWORD: nexus
-      POSTGRES_DB: nexus_sentry
+      POSTGRES_USER: ${POSTGRES_USER:-nexus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexus}
+      POSTGRES_DB: ${POSTGRES_DB:-nexus_sentry}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nexus -d nexus_sentry"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexus} -d ${POSTGRES_DB:-nexus_sentry}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -52,7 +59,8 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
 
   ollama:
     image: ollama/ollama:latest
@@ -62,6 +70,12 @@ services:
       - ollama_data:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
+    deploy:
+      resources:
+        limits:
+          devices:
+            - capabilities: [gpu]
+    restart: unless-stopped
 
 volumes:
   postgres_data:
