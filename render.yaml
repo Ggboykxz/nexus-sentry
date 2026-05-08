@@ -1,33 +1,13 @@
-name: nexus-sentry
-
 services:
-  - type: web
-    name: nexus-sentry-api
+  - name: nexus-sentry-api
+    type: web
     env: node
     region: oregon
-    buildCommand: npm install -g pnpm && pnpm install --filter @nexus-sentry/api && pnpm --filter @nexus-sentry/api build
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build
     startCommand: node apps/api/dist/index.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 3001
-      - key: OLLAMA_URL
-        value: http://localhost:11434
-      - key: OLLAMA_MODEL
-        value: llama3.2:3b
-    disk:
-      enabled: false
+        value: "3001"
     autoDeploy: true
-
-  postgres:
-    name: nexus-sentry-db
-    plan: free
-    region: oregon
-    databaseName: nexus_sentry
-    databaseUser: nexus
-
-  redis:
-    name: nexus-sentry-redis
-    plan: free
-    region: oregon
