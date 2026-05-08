@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiGet } from '../lib/api';
 
 interface Event {
   id: string;
