@@ -7,7 +7,7 @@
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
     "start:prod": "node --experimental-vm-modules src/index.js",
-    "build": "bun build src/index.ts --compile --outfile src/index.js",
+    "build": "tsc",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
