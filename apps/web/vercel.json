@@ -1,6 +1,0 @@
-{
-  "framework": "react",
-  "buildCommand": "pnpm install && pnpm build",
-  "installCommand": "pnpm install",
-  "outputDirectory": "dist"
-}
