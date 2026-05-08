@@ -44,12 +44,21 @@ export function useEvents(filters?: {
   return useQuery<EventsResponse>({
     queryKey: ['events', filters],
     queryFn: async () => {
+      const url = import.meta.env.VITE_API_URL || '';
+      if (!url) {
+        return DEMO_EVENTS;
+      }
       try {
-        return await apiGet<EventsResponse>('/api/v1/events', filters);
+        const response = await fetch(`${url}/api/v1/events`);
+        if (!response.ok) {
+          return DEMO_EVENTS;
+        }
+        return await response.json();
       } catch {
         return DEMO_EVENTS;
       }
     },
-    staleTime: 30000,
+    staleTime: Infinity,
+    gcTime: 0,
   });
 }

@@ -41,12 +41,21 @@ export function useIncidents(filters?: {
   return useQuery<IncidentsResponse>({
     queryKey: ['incidents', filters],
     queryFn: async () => {
+      const url = import.meta.env.VITE_API_URL || '';
+      if (!url) {
+        return DEMO_INCIDENTS;
+      }
       try {
-        return await apiGet<IncidentsResponse>('/api/v1/incidents', filters);
+        const response = await fetch(`${url}/api/v1/incidents`);
+        if (!response.ok) {
+          return DEMO_INCIDENTS;
+        }
+        return await response.json();
       } catch {
         return DEMO_INCIDENTS;
       }
     },
-    staleTime: 30000,
+    staleTime: Infinity,
+    gcTime: 0,
   });
 }
