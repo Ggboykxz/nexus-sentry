@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm install --filter @nexus-sentry/web && pnpm --filter @nexus-sentry/web build",
+  "buildCommand": "pnpm install --filter @nexus-sentry/web && pnpm --filter @nexus-sentry/web build && cp -r apps/web/dist dist",
   "installCommand": "pnpm install",
-  "outputDirectory": "apps/web/dist",
+  "outputDirectory": "dist",
   "framework": "vite"
 }
