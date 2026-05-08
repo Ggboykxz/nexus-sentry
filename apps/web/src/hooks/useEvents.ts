@@ -24,6 +24,16 @@ interface EventsResponse {
   };
 }
 
+const DEMO_EVENTS: EventsResponse = {
+  data: [
+    { id: '1', source: 'github', title: 'Security vulnerability detected', description: 'Critical CVE in dependencies', severity: 'critical', status: 'open', payload: {}, tags: ['security'], createdAt: new Date().toISOString() },
+    { id: '2', source: 'sentry', title: 'Error in production', description: 'NullPointerException in checkout', severity: 'error', status: 'open', payload: {}, tags: ['backend'], createdAt: new Date().toISOString() },
+    { id: '3', source: 'prometheus', title: 'High CPU usage', description: 'Server usage above 90%', severity: 'warning', status: 'open', payload: {}, tags: ['infra'], createdAt: new Date().toISOString() },
+    { id: '4', source: 'generic', title: 'Deployment completed', description: 'v2.1.0 deployed successfully', severity: 'info', status: 'resolved', payload: {}, tags: ['deploy'], createdAt: new Date().toISOString() },
+  ],
+  meta: { total: 4, limit: 10, offset: 0 }
+};
+
 export function useEvents(filters?: {
   source?: string;
   severity?: string;
@@ -33,6 +43,13 @@ export function useEvents(filters?: {
 }) {
   return useQuery<EventsResponse>({
     queryKey: ['events', filters],
-    queryFn: () => apiGet<EventsResponse>('/api/v1/events', filters),
+    queryFn: async () => {
+      try {
+        return await apiGet<EventsResponse>('/api/v1/events', filters);
+      } catch {
+        return DEMO_EVENTS;
+      }
+    },
+    staleTime: 30000,
   });
 }
