@@ -6,14 +6,11 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
-    "start:prod": "NODE_ENV=production bun run src/index.ts",
-    "build": "echo 'Build completed'",
+    "start:prod": "node --experimental-vm-modules src/index.js",
+    "build": "bun build src/index.ts --compile --outfile src/index.js",
     "lint": "eslint src",
-    "typecheck": "echo 'Typecheck skipped for API'",
-    "test": "vitest run",
-    "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate",
-    "db:generate": "drizzle-kit generate"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "hono": "^4.0.0",
@@ -43,5 +40,8 @@
     "eslint": "^8.57.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

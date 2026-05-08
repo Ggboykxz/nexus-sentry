@@ -1,3 +1,5 @@
+name: nexus-sentry
+
 services:
   - type: web
     name: nexus-sentry-api
@@ -12,7 +14,6 @@ services:
         value: 3001
       - key: OLLAMA_URL
         value: http://localhost:11434
-        # Override with your Ollama service URL if using external
       - key: OLLAMA_MODEL
         value: llama3.2:3b
     disk:
@@ -25,7 +26,6 @@ services:
     region: oregon
     databaseName: nexus_sentry
     databaseUser: nexus
-    # Password will be set via UI or environment variable
 
   redis:
     name: nexus-sentry-redis
